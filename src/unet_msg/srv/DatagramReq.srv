@@ -1,0 +1,29 @@
+# reliability
+int8 RELIABILITY_UNRELIABLE = -1
+int8 RELIABILITY_AUTO = 0
+int8 RELIABILITY_RELIABLE = 1
+
+# robustness
+uint8 ROBUSTNESS_NORMAL = 0
+uint8 ROBUSTNESS_ROBUST = 1
+
+# priority
+uint8 PRIORITY_URGENT = 0
+uint8 PRIORITY_HIGH = 1
+uint8 PRIORITY_DEFAULT = 2
+uint8 PRIORITY_LOW = 3
+uint8 PRIORITY_IDLE = 4
+
+uint8[] data
+uint16 to 0
+uint8 protocol 0
+int8 reliability 0
+uint8 robustness 0
+float32 ttl 0
+uint8 priority 2
+bool shortcircuit true
+string route ""
+---
+bool agree
+string id
+string reason
