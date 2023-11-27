@@ -30,18 +30,20 @@ class UnetGatewayService(Node):
         for param in params:
             if param.name == 'host' or param.name == 'port':
                 if self.sock:
-                    self.close_socket()
-                self.sock = None
+                    self.sock.close()
+                    self.sock = None
 
     def connect(self):
         if self.sock == None:
             host = self.get_parameter('host').value
             port = self.get_parameter('port').value
-            self.sock = unetpy.UnetSocket(host, port)
-            self.sock.setTimeout(0)
-            self.gw = self.sock.getGateway()
-            self.dsp = self.gw.agentForService(unetpy.Services.REMOTE)
-
+            try:
+                self.sock = unetpy.UnetSocket(host, port)
+                self.sock.setTimeout(0)
+                self.gw = self.sock.getGateway()
+                self.dsp = self.gw.agentForService(unetpy.Services.REMOTE)
+            except:
+                self.sock = None
 
     def address_resolution_req(self, request, response):
         self.connect()
@@ -53,7 +55,10 @@ class UnetGatewayService(Node):
 
     def monitor(self):
         self.connect()
-        rsp = self.sock.receive()
+        try:
+            rsp = self.sock.receive()
+        except:
+            return
         if rsp != None:
             msg = unet_msg.msg.DatagramNtf(
                 data=rsp.data,
@@ -70,14 +75,15 @@ class UnetGatewayService(Node):
             to=request.to,
             data=request.data.tolist(),
             protocol=request.protocol,
-            robustness=request.robustness,          # TODO: check translation
-            ttl=request.ttl,
-            priority=request.priority,              # TODO: check translation
+            robustness=request.robustness,
+            priority=request.priority,
             shortcircuit=request.shortcircuit
         )
-        if request.reliability == unet_msg.srv.DatagramReq.Request.RELIABILITY_RELIABLE:
+        if request.ttl >= 0:
+            req.ttl = request.ttl
+        if request.reliability == unet_msg.srv.DatagramReq.Request.RELIABLE:
             req.reliability = True
-        elif request.reliability == unet_msg.srv.DatagramReq.Request.RELIABILITY_UNRELIABLE:
+        elif request.reliability == unet_msg.srv.DatagramReq.Request.UNRELIABLE:
             req.reliability = False
         if request.route:
             req.route = request.route
